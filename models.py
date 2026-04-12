@@ -89,7 +89,7 @@ def create_tables():
     admin_role, _ = Role.get_or_create(name='Администратор')
 
     load_dotenv()
-    admin_ids = list(map(int, os.getenv('ADMIN_ID', '').split()))
+    admin_ids = list(map(int, os.getenv('ADMIN', '').split()))
     for admin_id in admin_ids:
         user, _ = User.get_or_create(id=admin_id)
         UserRole.get_or_create(user=user, role=admin_role)
