@@ -13,4 +13,5 @@ def get_admin_menu() -> Keyboard:
     keyboard = Keyboard(one_time=False, inline=False)
     keyboard.add(Text("Добавить помещение"), color=KeyboardButtonColor.POSITIVE)
     keyboard.add(Text("Список помещений"),   color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text("Добавить администратора"), color=KeyboardButtonColor.POSITIVE)
     return keyboard

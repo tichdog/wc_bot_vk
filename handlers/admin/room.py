@@ -33,25 +33,18 @@ def register_admin_room_handlers(bot: Bot):
         await message.answer(f"Список помещений:\n\n{text}", keyboard=get_admin_menu())
 
 
-def register_admin_state_handlers(bot: Bot):
+async def handle_waiting_for_room_name(bot: Bot, message: Message):
+    room_name = message.text.strip()
 
-    @bot.on.message()
-    async def add_room_finish(message: Message):
-        state = await bot.state_dispenser.get(message.from_id)
-        if state is None or state.state != AdminStates.waiting_for_room_name:
-            return
+    if not room_name:
+        await message.answer("Название не может быть пустым. Попробуйте ещё раз:")
+        return
 
-        room_name = message.text.strip()
+    user, _ = User.get_or_create(id=message.from_id)
+    Room.create(name=room_name, creator=user)
 
-        if not room_name:
-            await message.answer("Название не может быть пустым. Попробуйте ещё раз:")
-            return
-
-        user, _ = User.get_or_create(id=message.from_id)
-        Room.create(name=room_name, creator=user)
-
-        await bot.state_dispenser.delete(message.from_id)
-        await message.answer(
-            f"Помещение '{room_name}' добавлено!",
-            keyboard=get_admin_menu(),
-        )
+    await bot.state_dispenser.delete(message.from_id)
+    await message.answer(
+        f"Помещение '{room_name}' добавлено!",
+        keyboard=get_admin_menu(),
+    )
