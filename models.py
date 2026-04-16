@@ -10,9 +10,9 @@ from peewee import (
     IntegerField,
 )
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'database.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'database.db')
 
-db = SqliteDatabase(DB_PATH)
+db = SqliteDatabase(DB_PATH, pragmas={'journal_mode': 'wal'})
 
 
 class BaseModel(Model):
@@ -80,16 +80,16 @@ class Notify(BaseModel):
 
 
 def create_tables():
-    # создать таблицы с админами
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
-    with db:
-        db.create_tables([User, Role, UserRole, Room, Appeal, Notify])
-
-    admin_role, _ = Role.get_or_create(name='Администратор')
+    db.connect(reuse_if_open=True)
+    db.create_tables([User, Role, UserRole, Room, Appeal, Notify])
 
     load_dotenv()
+    admin_role, _ = Role.get_or_create(name='Администратор')
     admin_ids = list(map(int, os.getenv('ADMIN', '').split()))
     for admin_id in admin_ids:
         user, _ = User.get_or_create(id=admin_id)
         UserRole.get_or_create(user=user, role=admin_role)
+
+    db.close()
