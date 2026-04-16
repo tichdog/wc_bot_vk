@@ -1,35 +1,36 @@
-from vkbottle.bot import Bot, Message
+from vkbottle.framework.labeler.bot import BotLabeler
+from vkbottle.bot import Message
 
 from filters import IsRole
 from keyboards import get_admin_menu
 from models import User, Role, UserRole
 from states import AdminStates
+from dispenser import state_dispenser
 
+labeler = BotLabeler()
 is_admin = IsRole("Администратор")
 
 
-def register_admin_mgmt_handlers(bot: Bot):
+@labeler.message(text=["Добавить администратора"])
+async def ask_admin_id(message: Message):
+    if not is_admin(message):
+        return
 
-    @bot.on.message(text=["Добавить администратора"])
-    async def ask_admin_id(message: Message):
-        if not is_admin(message):
-            return
-
-        await bot.state_dispenser.set(message.from_id, AdminStates.waiting_for_admin_id)
-        await message.answer(
-            "Введите VK ID пользователя, которого хотите назначить администратором.\n"
-            "Отправьте /cancel, чтобы отменить."
-        )
+    await state_dispenser.set(message.from_id, AdminStates.waiting_for_admin_id)
+    await message.answer(
+        "Введите VK ID пользователя, которого хотите назначить администратором.\n"
+        "Отправьте /cancel, чтобы отменить."
+    )
 
 
-async def handle_waiting_for_admin_id(bot: Bot, message: Message):
+async def handle_waiting_for_admin_id(message: Message):
     if message.text.strip().lower() in ("/cancel", "отмена"):
-        await bot.state_dispenser.delete(message.from_id)
+        await state_dispenser.delete(message.from_id)
         await message.answer("Действие отменено.", keyboard=get_admin_menu())
         return
 
     raw = message.text.strip()
-    if not raw.isdigit() or int(raw) < 9 or int(raw) > 10:
+    if not raw.isdigit():
         await message.answer(
             "Некорректный ID. Введите числовой VK ID пользователя "
             "или /cancel для отмены."
@@ -54,7 +55,7 @@ async def handle_waiting_for_admin_id(bot: Bot, message: Message):
     ).exists()
 
     if already:
-        await bot.state_dispenser.delete(message.from_id)
+        await state_dispenser.delete(message.from_id)
         await message.answer(
             f"Пользователь с ID {target_id} уже является администратором.",
             keyboard=get_admin_menu(),
@@ -63,7 +64,7 @@ async def handle_waiting_for_admin_id(bot: Bot, message: Message):
 
     UserRole.create(user=user, role=admin_role)
 
-    await bot.state_dispenser.delete(message.from_id)
+    await state_dispenser.delete(message.from_id)
     await message.answer(
         f"Пользователь с ID {target_id} успешно назначен администратором.",
         keyboard=get_admin_menu(),
