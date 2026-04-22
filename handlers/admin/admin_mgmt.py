@@ -15,7 +15,6 @@ is_admin = IsRole("Администратор")
 async def ask_admin_id(message: Message):
     if not is_admin(message):
         return
-
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_admin_id)
     await message.answer(
         "Введите VK ID пользователя, которого хотите назначить администратором.\n"
@@ -23,6 +22,7 @@ async def ask_admin_id(message: Message):
     )
 
 
+@labeler.message(state=AdminStates.waiting_for_admin_id)
 async def handle_waiting_for_admin_id(message: Message):
     if message.text.strip().lower() in ("/cancel", "отмена"):
         await state_dispenser.delete(message.from_id)
@@ -37,21 +37,21 @@ async def handle_waiting_for_admin_id(message: Message):
         )
         return
 
-    target_id = int(raw)
-
-    if target_id == message.from_id:
+    if len(raw) < 9 or len(raw) > 11:
         await message.answer(
-            "Вы уже являетесь администратором\n"
-            "Введите другой ID или /cancel."
+            "Некорректный ID, неверное количество чисел."
         )
+        return
+
+    target_id = int(raw)
+    if target_id == message.from_id:
+        await message.answer("Вы уже являетесь администратором\nВведите другой ID или /cancel.")
         return
 
     admin_role, _ = Role.get_or_create(name="Администратор")
     user, _ = User.get_or_create(id=target_id)
-
     already = UserRole.select().where(
-        (UserRole.user == user) &
-        (UserRole.role == admin_role)
+        (UserRole.user == user) & (UserRole.role == admin_role)
     ).exists()
 
     if already:
@@ -63,7 +63,6 @@ async def handle_waiting_for_admin_id(message: Message):
         return
 
     UserRole.create(user=user, role=admin_role)
-
     await state_dispenser.delete(message.from_id)
     await message.answer(
         f"Пользователь с ID {target_id} успешно назначен администратором.",

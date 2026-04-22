@@ -15,7 +15,6 @@ is_admin = IsRole("Администратор")
 async def add_room_start(message: Message):
     if not is_admin(message):
         return
-
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_room_name)
     await message.answer("Введите название помещения:")
 
@@ -24,26 +23,21 @@ async def add_room_start(message: Message):
 async def list_rooms(message: Message):
     if not is_admin(message):
         return
-
     rooms = Room.get_active_by_user(message.from_id)
-
     if not rooms:
         await message.answer("Нет доступных помещений", keyboard=get_admin_menu())
         return
-
     text = "\n".join(f"• {room.name}" for room in rooms)
     await message.answer(f"Список помещений:\n\n{text}", keyboard=get_admin_menu())
 
 
+@labeler.message(state=AdminStates.waiting_for_room_name)
 async def handle_waiting_for_room_name(message: Message):
     room_name = message.text.strip()
-
     if not room_name:
         await message.answer("Название не может быть пустым. Попробуйте ещё раз:")
         return
-
     user, _ = User.get_or_create(id=message.from_id)
     Room.create(name=room_name, creator=user)
-
     await state_dispenser.delete(message.from_id)
     await message.answer(f"Помещение '{room_name}' добавлено!", keyboard=get_admin_menu())
