@@ -12,7 +12,7 @@ is_admin = IsRole("Администратор")
 
 
 @labeler.message(text=["Добавить администратора"])
-async def ask_admin_id(message: Message):
+async def add_admin_id(message: Message):
     if not is_admin(message):
         return
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_admin_id)

@@ -7,7 +7,7 @@ from keyboards import get_admin_menu
 from states import AdminStates
 from dispenser import state_dispenser
 
-labeler = BotLabeler()
+labeler_room = BotLabeler()
 
 class IsAdminRule(ABCRule[Message]):
     async def check(self, message: Message) -> Optional[Dict[str, Any]]:
@@ -25,14 +25,17 @@ class IsAdminRule(ABCRule[Message]):
         return False
 
 
-@labeler.message(IsAdminRule(), text=["Добавить помещение", "Добавить", "/add", "/add_room"])
-async def add_room_start(message: Message, is_admin: bool, user_id: int):
+labeler_room.auto_rules = [IsAdminRule()]
+
+
+@labeler_room.message(text=["Добавить помещение", "Добавить", "/add", "/add_room"])
+async def add_room_start(message: Message):
     await state_dispenser.set(message.peer_id, AdminStates.waiting_for_room_name)
     await message.answer("Введите название помещения:")
 
 
-@labeler.message(IsAdminRule(), text="Список помещений")
-async def list_rooms(message: Message, is_admin: bool, user_id: int):
+@labeler_room.message(text="Список помещений")
+async def list_rooms(message: Message):
     rooms = Room.get_active_by_user(message.from_id)
 
     if not rooms:
@@ -43,7 +46,7 @@ async def list_rooms(message: Message, is_admin: bool, user_id: int):
     await message.answer(f"Список помещений:\n\n{text}", keyboard=get_admin_menu())
 
 
-@labeler.message(state=AdminStates.waiting_for_room_name)
+@labeler_room.message(state=AdminStates.waiting_for_room_name)
 async def handle_waiting_for_room_name(message: Message):
     room_name = message.text.strip()
 

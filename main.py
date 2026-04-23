@@ -4,11 +4,11 @@ from vkbottle.bot import Bot, BotLabeler
 from handlers import register_all_handlers
 from dispenser import state_dispenser
 from models import create_tables, db
-from handlers.admin.room import labeler
+from handlers.admin.room import labeler_room
 from states import AdminStates
 
 main_labeler = BotLabeler()
-main_labeler.load(labeler)
+main_labeler.load(labeler_room)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
