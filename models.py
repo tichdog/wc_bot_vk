@@ -93,15 +93,31 @@ class Notify(BaseModel):
         table_name = 'notifies'
 
 
-# Список привилегий администратора
-ADMIN_PERMISSIONS = [
+PERMISSIONS = [
     "Добавить помещение",
     "Список помещений",
     "Добавить администратора",
     "Управление ботом",
     "Особое приветствие",
+    "Добавить менеджера",
 ]
 
+ROLES = [
+    "Администратор",
+    "Менеджер",
+]
+
+ROLE_PERMISSIONS = [
+    ("Администратор", "Добавить помещение"),
+    ("Администратор", "Список помещений"),
+    ("Администратор", "Добавить администратора"),
+    ("Администратор", "Управление ботом"),
+    ("Администратор", "Особое приветствие"),
+    ("Администратор", "Добавить менеджера"),
+
+    ("Менеджер", "Добавить помещение"),
+    ("Менеджер", "Список помещений"),
+]
 
 def create_tables():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -111,12 +127,21 @@ def create_tables():
 
     load_dotenv()
 
-    admin_role, _ = Role.get_or_create(name='Администратор')
-    for perm_name in ADMIN_PERMISSIONS:
-        perm, _ = Permission.get_or_create(name=perm_name)
-        RolePermission.get_or_create(role=admin_role, permission=perm)
+    for perm_name in PERMISSIONS:
+        Permission.get_or_create(name=perm_name)
+
+    for role_name in ROLES:
+        Role.get_or_create(name=role_name)
+
+    for role_name, perm_name in ROLE_PERMISSIONS:
+        RolePermission.get_or_create(
+            role=Role.get(name=role_name),
+            permission=Permission.get(name=perm_name),
+        )
 
     admin_ids = list(map(int, os.getenv('ADMIN', '').split()))
+    admin_role = Role.get(name="Администратор")
+
     for admin_id in admin_ids:
         user, _ = User.get_or_create(id=admin_id)
         UserRole.get_or_create(user=user, role=admin_role)

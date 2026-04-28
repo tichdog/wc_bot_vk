@@ -2,7 +2,7 @@ from vkbottle.framework.labeler.bot import BotLabeler
 from vkbottle.bot import Message
 
 from filters.permition import IsPermission
-from keyboards import get_admin_menu
+from keyboards import get_keyboard
 from models import Room, User
 from states import AdminStates
 from dispenser import state_dispenser
@@ -20,10 +20,10 @@ async def add_room_start(message: Message):
 async def list_rooms(message: Message):
     rooms = Room.get_active_by_user(message.from_id)
     if not rooms:
-        await message.answer("Нет доступных помещений", keyboard=get_admin_menu())
+        await message.answer("Нет доступных помещений", keyboard=get_keyboard(message))
         return
     text = "\n".join(f"• {room.name}" for room in rooms)
-    await message.answer(f"Список помещений:\n\n{text}", keyboard=get_admin_menu())
+    await message.answer(f"Список помещений:\n\n{text}", keyboard=get_keyboard(message))
 
 
 @labeler.message(IsPermission("Добавить помещение"), state=AdminStates.waiting_for_room_name)
@@ -35,4 +35,4 @@ async def handle_waiting_for_room_name(message: Message):
     user, _ = User.get_or_create(id=message.from_id)
     Room.create(name=room_name, creator=user)
     await state_dispenser.delete(message.from_id)
-    await message.answer(f"Помещение '{room_name}' добавлено!", keyboard=get_admin_menu())
+    await message.answer(f"Помещение '{room_name}' добавлено!", keyboard=get_keyboard(message))
