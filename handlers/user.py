@@ -1,11 +1,11 @@
 from vkbottle.framework.labeler.bot import BotLabeler
 from vkbottle.bot import Message
 
-from filters import IsRole
+from filters.permition import IsPermission
 from keyboards import get_main_keyboard, get_admin_menu
 
 labeler = BotLabeler()
-is_admin = IsRole("Администратор")
+is_admin = IsPermission("Управление ботом")
 
 
 def _keyboard_for(message: Message):

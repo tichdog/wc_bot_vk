@@ -1,28 +1,23 @@
 from vkbottle.framework.labeler.bot import BotLabeler
 from vkbottle.bot import Message
 
-from filters import IsRole
+from filters.permition import IsPermission
 from keyboards import get_admin_menu
 from models import Room, User
 from states import AdminStates
 from dispenser import state_dispenser
 
 labeler = BotLabeler()
-is_admin = IsRole("Администратор")
 
 
-@labeler.message(text=["Добавить помещение", "Добавить", "/add", "/add_room"])
+@labeler.message(IsPermission("Добавить помещение"), text=["Добавить помещение", "/add"])
 async def add_room_start(message: Message):
-    if not is_admin(message):
-        return
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_room_name)
     await message.answer("Введите название помещения:")
 
 
-@labeler.message(text="Список помещений")
+@labeler.message(IsPermission("Список помещений"), text="Список помещений")
 async def list_rooms(message: Message):
-    if not is_admin(message):
-        return
     rooms = Room.get_active_by_user(message.from_id)
     if not rooms:
         await message.answer("Нет доступных помещений", keyboard=get_admin_menu())
@@ -31,7 +26,7 @@ async def list_rooms(message: Message):
     await message.answer(f"Список помещений:\n\n{text}", keyboard=get_admin_menu())
 
 
-@labeler.message(state=AdminStates.waiting_for_room_name)
+@labeler.message(IsPermission("Добавить помещение"), state=AdminStates.waiting_for_room_name)
 async def handle_waiting_for_room_name(message: Message):
     room_name = message.text.strip()
     if not room_name:

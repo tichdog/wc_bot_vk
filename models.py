@@ -21,7 +21,6 @@ class BaseModel(Model):
 
 
 class User(BaseModel):
-
     id = IntegerField(primary_key=True)
 
     class Meta:
@@ -29,18 +28,33 @@ class User(BaseModel):
 
 
 class Role(BaseModel):
-    name = CharField()
+    name = CharField(unique=True)
 
     class Meta:
         table_name = 'roles'
 
 
 class UserRole(BaseModel):
-    user = ForeignKeyField(User, backref='roles')
-    role = ForeignKeyField(Role, backref='users')
+    user = ForeignKeyField(User, backref='user_roles')
+    role = ForeignKeyField(Role, backref='role_users')
 
     class Meta:
         table_name = 'user_roles'
+
+
+class Permission(BaseModel):
+    name = CharField(unique=True)
+
+    class Meta:
+        table_name = 'permissions'
+
+
+class RolePermission(BaseModel):
+    role = ForeignKeyField(Role, backref='role_permissions')
+    permission = ForeignKeyField(Permission, backref='permission_roles')
+
+    class Meta:
+        table_name = 'role_permissions'
 
 
 class Room(BaseModel):
@@ -79,14 +93,29 @@ class Notify(BaseModel):
         table_name = 'notifies'
 
 
+# Список привилегий администратора
+ADMIN_PERMISSIONS = [
+    "Добавить помещение",
+    "Список помещений",
+    "Добавить администратора",
+    "Управление ботом",
+    "Особое приветствие",
+]
+
+
 def create_tables():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
     db.connect(reuse_if_open=True)
-    db.create_tables([User, Role, UserRole, Room, Appeal, Notify])
+    db.create_tables([User, Role, UserRole, Permission, RolePermission, Room, Appeal, Notify])
 
     load_dotenv()
+
     admin_role, _ = Role.get_or_create(name='Администратор')
+    for perm_name in ADMIN_PERMISSIONS:
+        perm, _ = Permission.get_or_create(name=perm_name)
+        RolePermission.get_or_create(role=admin_role, permission=perm)
+
     admin_ids = list(map(int, os.getenv('ADMIN', '').split()))
     for admin_id in admin_ids:
         user, _ = User.get_or_create(id=admin_id)

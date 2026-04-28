@@ -1,20 +1,21 @@
 from vkbottle.framework.labeler.bot import BotLabeler
 from vkbottle.bot import Message
-
 from keyboards import get_main_keyboard, get_admin_menu
-from filters import IsRole
+from filters.permition import IsPermission
 
 labeler = BotLabeler()
-is_admin = IsRole("Администратор")
+is_admin = IsPermission("Управление ботом")
+
+
+@labeler.message(IsPermission("Управление ботом"))
+async def command_unknown(message: Message):
+    await message.answer("Не понимаю такую команду.", keyboard=get_admin_menu())
 
 
 @labeler.message()
 async def command_unknown(message: Message):
-    if is_admin(message):
-        await message.answer("Не понимаю такую команду.", keyboard=get_admin_menu())
-    else:
-        await message.answer(
-            "Не понимаю такую команду.\n"
-            "Напиши 'Помощь', чтобы увидеть список доступных команд.",
-            keyboard=get_main_keyboard(),
-        )
+    await message.answer(
+        "Не понимаю такую команду.\n"
+        "Напиши 'Помощь', чтобы увидеть список доступных команд.",
+        keyboard=get_main_keyboard(),
+    )

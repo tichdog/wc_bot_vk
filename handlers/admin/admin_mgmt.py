@@ -1,20 +1,17 @@
 from vkbottle.framework.labeler.bot import BotLabeler
 from vkbottle.bot import Message
-
-from filters import IsRole
+from filters.permition import IsPermission
 from keyboards import get_admin_menu
 from models import User, Role, UserRole
 from states import AdminStates
 from dispenser import state_dispenser
 
+
 labeler = BotLabeler()
-is_admin = IsRole("Администратор")
 
 
-@labeler.message(text=["Добавить администратора"])
+@labeler.message(IsPermission("Добавить администратора"), text=["Добавить администратора"])
 async def ask_admin_id(message: Message):
-    if not is_admin(message):
-        return
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_admin_id)
     await message.answer(
         "Введите VK ID пользователя, которого хотите назначить администратором.\n"
@@ -37,15 +34,13 @@ async def handle_waiting_for_admin_id(message: Message):
         )
         return
 
-    if len(raw) < 9 or len(raw) > 11:
-        await message.answer(
-            "Некорректный ID, неверное количество чисел."
-        )
+    if not (9 <= len(raw) <= 11):
+        await message.answer("Некорректный ID, неверное количество цифр.")
         return
 
     target_id = int(raw)
     if target_id == message.from_id:
-        await message.answer("Вы уже являетесь администратором\nВведите другой ID или /cancel.")
+        await message.answer("Вы уже являетесь администратором.\nВведите другой ID или /cancel.")
         return
 
     admin_role, _ = Role.get_or_create(name="Администратор")
