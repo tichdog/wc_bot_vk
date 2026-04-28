@@ -1,36 +1,47 @@
 from vkbottle import Keyboard, Text, KeyboardButtonColor
-from filters.permition import IsPermission
-from vkbottle.bot import Message
+from models import User, Role, UserRole
 
-def get_main_keyboard() -> Keyboard:
+
+def kb_main():
+    return [
+        [("Привет", KeyboardButtonColor.POSITIVE),
+         ("ID", KeyboardButtonColor.PRIMARY),
+         ("Помощь", KeyboardButtonColor.SECONDARY)]
+    ]
+
+def kb_manager():
+    return [
+        [("Добавить помещение", KeyboardButtonColor.POSITIVE),
+         ("Список помещений", KeyboardButtonColor.PRIMARY)]
+    ]
+
+def kb_admin():
+    return [
+        [("Добавить администратора", KeyboardButtonColor.POSITIVE),
+            ("Добавить менеджера", KeyboardButtonColor.POSITIVE),]
+    ]
+
+def has_role(user: User, role_name: str) -> bool:
+    return UserRole.get_or_none(
+        (UserRole.user == user) &
+        (UserRole.role == Role.get(name=role_name))
+    ) is not None
+
+def get_keyboard(user: User) -> Keyboard:
     keyboard = Keyboard(one_time=False, inline=False)
-    keyboard.add(Text("Привет"), color=KeyboardButtonColor.POSITIVE)
-    keyboard.add(Text("ID"),     color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text("Помощь"), color=KeyboardButtonColor.SECONDARY)
+    rows = []
+    rows += kb_main()
+
+    if has_role(user, "Менеджер"):
+        rows += kb_manager()
+
+    if has_role(user, "Администратор"):
+        rows += kb_manager()
+        rows += kb_admin()
+
+    for row in rows:
+        for text, color in row:
+            keyboard.add(Text(text), color=color)
+        keyboard.row()
+
     return keyboard
-
-def get_manager_keyboard() -> Keyboard:
-    keyboard = get_main_keyboard()
-    keyboard.row()
-    keyboard.add(Text("Добавить помещение"), color=KeyboardButtonColor.POSITIVE)
-    keyboard.add(Text("Список помещений"), color=KeyboardButtonColor.PRIMARY)
-    return keyboard
-
-def get_admin_keyboard() -> Keyboard:
-    keyboard = get_manager_keyboard()
-    keyboard.add(Text("Добавить администратора"), color=KeyboardButtonColor.POSITIVE)
-    keyboard.row()
-    keyboard.add(Text("Добавить менеджера"), color=KeyboardButtonColor.POSITIVE)
-    return keyboard
-
-
-def get_keyboard(message: Message) -> Keyboard:
-    is_admin = IsPermission("Управление ботом")
-    is_manager = IsPermission("Добавить помещение")
-
-    if is_admin(message):
-        return get_admin_keyboard()
-    elif is_manager(message):
-        return get_manager_keyboard()
-    else:
-        return get_main_keyboard()

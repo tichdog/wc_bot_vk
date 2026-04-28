@@ -5,6 +5,7 @@ from keyboards import get_keyboard
 from models import User, Role, UserRole
 from states import AdminStates
 from dispenser import state_dispenser
+from utils import get_or_create_user
 
 
 labeler = BotLabeler()
@@ -21,9 +22,10 @@ async def ask_admin_id(message: Message):
 
 @labeler.message(state=AdminStates.waiting_for_admin_id)
 async def handle_waiting_for_admin_id(message: Message):
+    user_db = get_or_create_user(message)
     if message.text.strip().lower() in ("/cancel", "отмена"):
         await state_dispenser.delete(message.from_id)
-        await message.answer("Действие отменено.", keyboard=get_keyboard(message))
+        await message.answer("Действие отменено.", keyboard=get_keyboard(user_db))
         return
 
     raw = message.text.strip()
@@ -53,7 +55,7 @@ async def handle_waiting_for_admin_id(message: Message):
         await state_dispenser.delete(message.from_id)
         await message.answer(
             f"Пользователь с ID {target_id} уже является администратором.",
-            keyboard=get_keyboard(message),
+            keyboard=get_keyboard(user_db),
         )
         return
 
@@ -61,7 +63,7 @@ async def handle_waiting_for_admin_id(message: Message):
     await state_dispenser.delete(message.from_id)
     await message.answer(
         f"Пользователь с ID {target_id} успешно назначен администратором.",
-        keyboard=get_keyboard(message),
+        keyboard=get_keyboard(user_db),
     )
 
 @labeler.message(IsPermission("Добавить менеджера"), text=["Добавить менеджера"])
@@ -75,9 +77,10 @@ async def ask_manager_id(message: Message):
 
 @labeler.message(state=AdminStates.waiting_for_manager_id)
 async def handle_waiting_for_manager_id(message: Message):
+    user_db = get_or_create_user(message)
     if message.text.strip().lower() in ("/cancel", "отмена"):
         await state_dispenser.delete(message.from_id)
-        await message.answer("Действие отменено.", keyboard=get_keyboard(message))
+        await message.answer("Действие отменено.", keyboard=get_keyboard(user_db))
         return
 
     raw = message.text.strip()
@@ -103,7 +106,7 @@ async def handle_waiting_for_manager_id(message: Message):
         await state_dispenser.delete(message.from_id)
         await message.answer(
             f"Пользователь с ID {target_id} уже является менеджером.",
-            keyboard=get_keyboard(message),
+            keyboard=get_keyboard(user_db),
         )
         return
 
@@ -111,5 +114,5 @@ async def handle_waiting_for_manager_id(message: Message):
     await state_dispenser.delete(message.from_id)
     await message.answer(
         f"Пользователь с ID {target_id} успешно назначен менеджером.",
-        keyboard=get_keyboard(message),
+        keyboard=get_keyboard(user_db),
     )
