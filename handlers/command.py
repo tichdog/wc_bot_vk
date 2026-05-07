@@ -5,9 +5,10 @@ from keyboards import get_keyboard
 from utils import get_or_create_user
 
 labeler = BotLabeler()
+labeler.auto_rules = [IsPermission("Приветствие администратора")]
 
 
-@labeler.message(IsPermission("Особое приветствие"), text=["начать", "Начать", "/start", "start"])
+@labeler.message(text=["начать", "Начать", "/start", "start", "Привет", "привет"])
 async def cmd_start(message: Message):
     user = get_or_create_user(message)
 
@@ -18,7 +19,7 @@ async def cmd_start(message: Message):
     )
 
 
-@labeler.message(text=["начать", "Начать", "/start", "start"])
+@labeler.message(text=["начать", "Начать", "/start", "start", "Привет", "привет"])
 async def cmd_start(message: Message):
     user = get_or_create_user(message)
 

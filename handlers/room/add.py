@@ -17,17 +17,6 @@ async def add_room_start(message: Message):
     await message.answer("Введите название помещения:")
 
 
-@labeler.message(IsPermission("Список помещений"), text="Список помещений")
-async def list_rooms(message: Message):
-    user_db = get_or_create_user(message)
-    rooms = Room.get_active_by_user(message.from_id)
-    if not rooms:
-        await message.answer("Нет доступных помещений", keyboard=get_keyboard(user_db))
-        return
-    text = "\n".join(f"• {room.name}" for room in rooms)
-    await message.answer(f"Список помещений:\n\n{text}", keyboard=get_keyboard(user_db))
-
-
 @labeler.message(IsPermission("Добавить помещение"), state=AdminStates.waiting_for_room_name)
 async def handle_waiting_for_room_name(message: Message):
     user_db = get_or_create_user(message)

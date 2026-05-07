@@ -1,5 +1,5 @@
 from vkbottle.framework.labeler.bot import BotLabeler
-from vkbottle.bot import Message
+from vkbottle.bot import BotLabeler, Message, rules
 from filters.permition import IsPermission
 from keyboards import get_keyboard
 from models import User, Role, UserRole
@@ -9,9 +9,10 @@ from utils import get_or_create_user
 
 
 labeler = BotLabeler()
+labeler.auto_rules = [IsPermission("Добавить администратора")]
 
 
-@labeler.message(IsPermission("Добавить администратора"), text=["Добавить администратора"])
+@labeler.message(text=["Добавить администратора"])
 async def ask_admin_id(message: Message):
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_admin_id)
     await message.answer(
@@ -66,7 +67,7 @@ async def handle_waiting_for_admin_id(message: Message):
         keyboard=get_keyboard(user_db),
     )
 
-@labeler.message(IsPermission("Добавить менеджера"), text=["Добавить менеджера"])
+@labeler.message(text=["Добавить менеджера"])
 async def ask_manager_id(message: Message):
     await state_dispenser.set(message.from_id, AdminStates.waiting_for_manager_id)
     await message.answer(

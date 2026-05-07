@@ -17,6 +17,6 @@ register_all_handlers(bot)
 
 if __name__ == "__main__":
     create_tables()
-    db.connect(reuse_if_open=True)
+    db.connect()
     print("Бот запущен")
     bot.run_forever()

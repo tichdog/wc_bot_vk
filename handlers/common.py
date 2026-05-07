@@ -6,13 +6,7 @@ from utils import get_or_create_user
 
 labeler = BotLabeler()
 
-
-@labeler.message(IsPermission("Управление ботом"))
-async def command_unknown(message: Message):
-    user = get_or_create_user(message)
-    await message.answer("Не понимаю такую команду.", keyboard=get_keyboard(user))
-
-
+# для всех юзеров одинаковая помощь
 @labeler.message()
 async def command_unknown(message: Message):
     user = get_or_create_user(message)

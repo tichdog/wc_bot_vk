@@ -6,7 +6,6 @@ from keyboards import get_keyboard
 from utils import get_or_create_user
 
 labeler = BotLabeler()
-is_admin = IsPermission("Управление ботом")
 
 
 @labeler.message(text=["привет", "Привет", "hi", "hello"])
