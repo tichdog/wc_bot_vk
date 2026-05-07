@@ -4,11 +4,13 @@ from filters.permition import IsPermission
 from keyboards import get_keyboard
 from utils import get_or_create_user
 
-labeler = BotLabeler()
-labeler.auto_rules = [IsPermission("Приветствие администратора")]
+admin_labeler = BotLabeler()
+admin_labeler.auto_rules = [IsPermission("Приветствие администратора")]
+
+user_labeler = BotLabeler()
 
 
-@labeler.message(text=["начать", "Начать", "/start", "start", "Привет", "привет"])
+@admin_labeler.message(text=["начать", "Начать", "/start", "start", "Привет", "привет"])
 async def cmd_start(message: Message):
     user = get_or_create_user(message)
 
@@ -19,7 +21,7 @@ async def cmd_start(message: Message):
     )
 
 
-@labeler.message(text=["начать", "Начать", "/start", "start", "Привет", "привет"])
+@user_labeler.message(text=["начать", "Начать", "/start", "start", "Привет", "привет"])
 async def cmd_start(message: Message):
     user = get_or_create_user(message)
 

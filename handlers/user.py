@@ -8,12 +8,12 @@ from utils import get_or_create_user
 labeler = BotLabeler()
 
 
-@labeler.message(text=["привет", "Привет", "hi", "hello"])
-async def cmd_hello(message: Message):
-    user_db = get_or_create_user(message)
-    user = await message.ctx_api.users.get(user_ids=message.from_id)
-    name = user[0].first_name if user else "друг"
-    await message.answer(f"Привет, {name}!", keyboard=get_keyboard(user_db))
+# @labeler.message(text=["привет", "Привет", "hi", "hello"])
+# async def cmd_hello(message: Message):
+#     user_db = get_or_create_user(message)
+#     user = await message.ctx_api.users.get(user_ids=message.from_id)
+#     name = user[0].first_name if user else "друг"
+#     await message.answer(f"Привет, {name}!", keyboard=get_keyboard(user_db))
 
 
 @labeler.message(text=["id", "ID", "мой id", "Мой ID", "Id"])
