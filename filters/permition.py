@@ -16,7 +16,7 @@ class IsPermission(ABCRule[MessageMin]):
             self._permission = Permission.get_or_none(name=self.permission_name)
         return self._permission
 
-    def check_user(self, user: User) -> bool:
+    def _check_user(self, user: User) -> bool:
         if self.permission is None:
             return False
         return (
@@ -34,10 +34,5 @@ class IsPermission(ABCRule[MessageMin]):
         user = User.get_or_none(id=message.from_id)
         if user is None:
             return False
-        return self.check_user(user)
+        return self._check_user(user)
 
-    def __call__(self, message: Message) -> bool:
-        user = User.get_or_none(id=message.from_id)
-        if user is None:
-            return False
-        return self.check_user(user)
