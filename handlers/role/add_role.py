@@ -1,15 +1,13 @@
-from vkbottle.framework.labeler.bot import BotLabeler
-from vkbottle.bot import BotLabeler, Message, rules
+from vkbottle.bot import BotLabeler, Message
 from filters.permition import IsPermission
 from keyboards import get_keyboard
 from models import User, Role, UserRole
-from states import AdminStates
+from states.admin_states import AdminStates
 from dispenser import state_dispenser
 from utils import get_or_create_user
 
-
 labeler = BotLabeler()
-labeler.auto_rules = [IsPermission("Добавить администратора")]
+labeler.auto_rules = [IsPermission("Добавить администратора"), IsPermission("Добавить менеджера")]
 
 
 @labeler.message(text=["Добавить администратора"])
@@ -46,8 +44,18 @@ async def handle_waiting_for_admin_id(message: Message):
         await message.answer("Вы уже являетесь администратором.\nВведите другой ID или /cancel.")
         return
 
-    admin_role, _ = Role.get_or_create(name="Администратор")
-    user, _ = User.get_or_create(id=target_id)
+    admin_role = Role.get_or_none(name="Администратор")
+    if admin_role is None:
+        admin_role = Role.create(name="Администратор")
+
+    user = User.get_or_none(id=target_id)
+    if user is None:
+        await state_dispenser.delete(message.from_id)
+        await message.answer(
+            f"Пользователь с ID {target_id} не найден. Он должен запустить бота хотя бы раз."
+        )
+        return
+
     already = UserRole.select().where(
         (UserRole.user == user) & (UserRole.role == admin_role)
     ).exists()
@@ -96,8 +104,17 @@ async def handle_waiting_for_manager_id(message: Message):
         return
 
     target_id = int(raw)
-    manager_role, _ = Role.get_or_create(name="Менеджер")
-    user, _ = User.get_or_create(id=target_id)
+    manager_role = Role.get_or_none(name="Менеджер")
+    if manager_role is None:
+        manager_role = Role.create(name="Менеджер")
+
+    user = User.get_or_none(id=target_id)
+    if user is None:
+        await state_dispenser.delete(message.from_id)
+        await message.answer(
+            f"Пользователь с ID {target_id} не найден. Он должен запустить бота хотя бы раз."
+        )
+        return
 
     already = UserRole.select().where(
         (UserRole.user == user) & (UserRole.role == manager_role)

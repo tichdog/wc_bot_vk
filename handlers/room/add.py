@@ -4,7 +4,7 @@ from vkbottle.bot import Message
 from filters.permition import IsPermission
 from keyboards import get_keyboard
 from models import Room, User
-from states import AdminStates
+from states.admin_states import AdminStates
 from dispenser import state_dispenser
 from utils import get_or_create_user
 
